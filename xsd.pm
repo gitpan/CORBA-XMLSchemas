@@ -9,10 +9,10 @@ use XML::DOM;
 #			CORBA to WSDL/SOAP Interworking Specification, Version 1.0 November 2003
 #
 
-package CORBA::XMLSchemas;
+package CORBA::XMLSchemas::xsd;
 
 use vars qw($VERSION);
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 package CORBA::XMLSchemas::xsdVisitor;
 
