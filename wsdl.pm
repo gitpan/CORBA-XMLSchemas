@@ -28,11 +28,13 @@ sub new {
 	$self->{tns} = 'tns';
 	$self->{xsd} = 'xs';
 	$self->{wsdl} = 'wsdl';
+	$self->{corba} = 'corba';
 	$self->{srcname} = $parser->YYData->{srcname};
 	$self->{srcname_size} = $parser->YYData->{srcname_size};
 	$self->{srcname_mtime} = $parser->YYData->{srcname_mtime};
 	$self->{symbtab} = $parser->YYData->{symbtab};
 	$self->{base} = $parser->YYData->{opt_b} || "";
+	$self->{root} = $parser->YYData->{root};
 	my $filename = basename($self->{srcname}, ".idl") . ".wsdl";
 	$self->open_stream($filename);
 	$self->{done_hash} = {};
@@ -47,7 +49,7 @@ sub _import {
 
 	unless (defined $self->{import}) {
 		my $import = $self->{dom_doc}->createElement($self->{wsdl} . ":import");
-		$import->setAttribute("namespace", "http://www.omg.org/IDL-Mapped");
+		$import->setAttribute("namespace", "http://www.omg.org/IDL-Mapped/");
 		my $filename = $self->{srcname};
 		$filename =~ s/^([^\/]+\/)+//;
 		$filename =~ s/\.idl$//i;
@@ -70,10 +72,12 @@ sub visitSpecification {
 	$self->{dom_parent} = $self->{dom_doc};
 
 	my $definitions = $self->{dom_doc}->createElement($self->{wsdl} . ":definitions");
-	$definitions->setAttribute("targetNamespace", "http://www.omg.org/IDL-Mapped");
-	$definitions->setAttribute("xmlns:" . $self->{tns}, "http://www.omg.org/IDL-Mapped");
+	$definitions->setAttribute("targetNamespace", "http://www.omg.org/IDL-Mapped/");
+	$definitions->setAttribute("xmlns:" . $self->{tns}, "http://www.omg.org/IDL-Mapped/");
 	$definitions->setAttribute("xmlns:" . $self->{xsd}, "http://www.w3.org/2001/XMLSchema");
-	$definitions->setAttribute("xmlns:" . $self->{wsdl}, "http://schemas.xmlsoap.org/wsdl");
+	$definitions->setAttribute("xmlns:" . $self->{wsdl}, "http://schemas.xmlsoap.org/wsdl/");
+	$definitions->setAttribute("xmlns:" . $self->{corba}, "http://www.omg.org/IDL-WSDL/1.0/")
+			if ($self->{root}->{need_corba});
 	$self->{dom_parent}->appendChild($definitions);
 
 	my $types = $self->_types();
@@ -104,9 +108,9 @@ sub _types {
 	my $types = $self->{dom_doc}->createElement($self->{wsdl} . ":types");
 
 	my $schema = $self->{dom_doc}->createElement($self->{xsd} . ":schema");
-	$schema->setAttribute("targetNamespace", "http://www.omg.org/IDL-Mapped");
+	$schema->setAttribute("targetNamespace", "http://www.omg.org/IDL-Mapped/");
 	$schema->setAttribute("xmlns:" . $self->{xsd}, "http://www.w3.org/2001/XMLSchema");
-	$schema->setAttribute("xmlns:" . $self->{tns}, "http://www.omg.org/IDL-Mapped");
+	$schema->setAttribute("xmlns:" . $self->{tns}, "http://www.omg.org/IDL-Mapped/");
 	$schema->setAttribute("elementFormDefault", "qualified");
 	$schema->setAttribute("attributeFormDefault", "unqualified");
 	$types->appendChild($schema);
@@ -313,7 +317,7 @@ sub visitOperation {
 		$dom_parent->appendChild($message);
 
 		unless ($type->isa("VoidType")) {
-			my $part = $self->{dom_doc}->createElement("part");
+			my $part = $self->{dom_doc}->createElement($self->{wsdl} . ":part");
 			$part->setAttribute("name", "_return");
 			$part->setAttribute("type", $type->{xsd_qname});
 			$message->appendChild($part);
@@ -334,7 +338,7 @@ sub visitOperation {
 		$message->setAttribute("name", "_exception." . $defn->{xsd_name});
 		$dom_parent->appendChild($message);
 
-		my $part = $self->{dom_doc}->createElement("part");
+		my $part = $self->{dom_doc}->createElement($self->{wsdl} . ":part");
 		$part->setAttribute("name", "exception");
 		$part->setAttribute("type", $defn->{xsd_qname});
 		$message->appendChild($part);
@@ -374,7 +378,7 @@ sub new {
 	$self->{srcname_size} = $parser->YYData->{srcname_size};
 	$self->{srcname_mtime} = $parser->YYData->{srcname_mtime};
 	$self->{symbtab} = $parser->YYData->{symbtab};
-	$self->{base} = $parser->YYData->{opt_b};
+	$self->{base} = $parser->YYData->{opt_b} || "";
 	my $filename = basename($self->{srcname}, ".idl") . "binding.wsdl";
 	$self->open_stream($filename);
 	$self->{done_hash} = {};
@@ -395,14 +399,14 @@ sub visitSpecification {
 	$self->{dom_parent} = $self->{dom_doc};
 
 	my $definitions = $self->{dom_doc}->createElement($self->{wsdl} . ":definitions");
-	$definitions->setAttribute("targetNamespace", "http://www.omg.org/IDL-Mapped");
-	$definitions->setAttribute("xmlns:" . $self->{tns}, "http://www.omg.org/IDL-Mapped");
-	$definitions->setAttribute("xmlns:" . $self->{wsdl}, "http://schemas.xmlsoap.org/wsdl");
-	$definitions->setAttribute("xmlns:" . $self->{soap}, "http://schemas.xmlsoap.org/wsdl/soap");
+	$definitions->setAttribute("targetNamespace", "http://www.omg.org/IDL-Mapped/");
+	$definitions->setAttribute("xmlns:" . $self->{tns}, "http://www.omg.org/IDL-Mapped/");
+	$definitions->setAttribute("xmlns:" . $self->{wsdl}, "http://schemas.xmlsoap.org/wsdl/");
+	$definitions->setAttribute("xmlns:" . $self->{soap}, "http://schemas.xmlsoap.org/wsdl/soap/");
 	$self->{dom_parent}->appendChild($definitions);
 
 	my $import = $self->{dom_doc}->createElement($self->{wsdl} . ":import");
-	$import->setAttribute("namespace", "http://www.omg.org/IDL-Mapped");
+	$import->setAttribute("namespace", "http://www.omg.org/IDL-Mapped/");
 	my $filename = $self->{srcname};
 	$filename =~ s/^([^\/]+\/)+//;
 	$filename =~ s/\.idl$//i;

@@ -12,7 +12,7 @@ use XML::DOM;
 package CORBA::XMLSchemas::xsd;
 
 use vars qw($VERSION);
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 package CORBA::XMLSchemas::xsdVisitor;
 
@@ -125,19 +125,20 @@ sub visitSpecification {
 	$self->{dom_parent} = $self->{dom_doc};
 
 	my $schema = $self->{dom_doc}->createElement($self->{xsd} . ":schema");
-	$schema->setAttribute("targetNamespace", "http://www.omg.org/IDL-Mapped");
+	$schema->setAttribute("targetNamespace", "http://www.omg.org/IDL-Mapped/");
 	$schema->setAttribute("xmlns:" . $self->{xsd}, "http://www.w3.org/2001/XMLSchema");
-	$schema->setAttribute("xmlns:" . $self->{corba}, "http://www.omg.org/IDL-WSDL/1.0")
+	$schema->setAttribute("xmlns:" . $self->{corba}, "http://www.omg.org/IDL-WSDL/1.0/")
 			if ($self->{root}->{need_corba});
-	$schema->setAttribute("xmlns:" . $self->{tns}, "http://www.omg.org/IDL-Mapped");
+	$schema->setAttribute("xmlns:" . $self->{tns}, "http://www.omg.org/IDL-Mapped/");
 	$schema->setAttribute("elementFormDefault", "qualified");
 	$schema->setAttribute("attributeFormDefault", "unqualified");
 	$self->{dom_parent}->appendChild($schema);
 
 	if ($self->{root}->{need_corba}) {
 		my $import = $self->{dom_doc}->createElement($self->{xsd} . ":import");
-		$import->setAttribute("namespace", "http://www.omg.org/IDL-WSDL/1.0");
-		$import->setAttribute("schemaLocation", "http://www.omg.org/IDL-WSDL/1.0");
+		$import->setAttribute("namespace", "http://www.omg.org/IDL-WSDL/1.0/");
+#		$import->setAttribute("schemaLocation", "http://www.omg.org/IDL-WSDL/1.0/");
+		$import->setAttribute("schemaLocation", "corba.xsd");
 		$schema->appendChild($import);
 	}
 

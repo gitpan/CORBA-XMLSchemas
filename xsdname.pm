@@ -81,7 +81,7 @@ sub visitBaseInterface {
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . "CORBA.ObjectReference";
+	$node->{xsd_qname} = $self->{corba} . ":ObjectReference";
 	foreach (@{$node->{list_export}}) {
 		$self->{symbtab}->Lookup($_)->visit($self);
 	}

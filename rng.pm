@@ -50,7 +50,7 @@ sub _value {
 	my ($node) = @_;
 
 	my $value = $node->{value};
-	if ($value->isa('Enum')) {
+	if (ref $value and $value->isa('Enum')) {
 		return $value->{xsd_name};
 	} else {
 		my $str = $value;
@@ -166,14 +166,14 @@ sub visitSpecification {
 	$self->{dom_parent} = $self->{dom_doc};
 
 	my $grammar = $self->{dom_doc}->createElement($self->{rng} . ":grammar");
-	$grammar->setAttribute("ns", "http://www.omg.org/IDL-Mapped");
+	$grammar->setAttribute("ns", "http://www.omg.org/IDL-Mapped/");
 	$grammar->setAttribute("datatypeLibrary", "http://www.w3.org/2001/XMLSchema-datatypes");
 	$grammar->setAttribute("xmlns:" . $self->{rng}, "http://relaxng.org/ns/structure/1.0");
 	$self->{dom_parent}->appendChild($grammar);
 
 	if ($self->{root}->{need_corba}) {
 		my $include = $self->{dom_doc}->createElement($self->{xsd} . ":include");
-		$include->setAttribute("href", "http://www.omg.org/IDL-WSDL/1.0");
+		$include->setAttribute("href", "http://www.omg.org/IDL-WSDL/1.0/");
 		$grammar->appendChild($include);
 	}
 

@@ -11,3 +11,4 @@ idl2xsd.pl
 idl2wsdl.pl
 idl2soap.pl
 idl2rng.pl
+corba.xsd
