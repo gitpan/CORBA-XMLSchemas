@@ -93,7 +93,7 @@ sub visitSpecification {
 	print $FH "     Generation date : ", POSIX::ctime(time());
 	print $FH "-->\n";
 	print $FH "\n";
-	print $FH $self->beautify($self->{dom_doc}->toString());
+	print $FH $self->_beautify($self->{dom_doc}->toString());
 	print $FH "\n\n";
 	print $FH "<!-- end of file : ", $self->{filename}, " -->\n";
 	close $FH;
@@ -431,7 +431,7 @@ sub visitSpecification {
 	print $FH "     Generation date : ",POSIX::ctime(time());
 	print $FH "-->\n";
 	print $FH "\n";
-	print $FH $self->beautify($self->{dom_doc}->toString());
+	print $FH $self->_beautify($self->{dom_doc}->toString());
 	print $FH "\n\n";
 	print $FH "<!-- end of file : ",$self->{filename}," -->\n";
 	close $FH;

@@ -57,7 +57,7 @@ if (        exists $parser->YYData->{root}
 		$parser->YYData->{symbtab}->Export();
 	}
 	$parser->YYData->{root}->visitName(new XsdNameVisitor($parser));
-	if ($parser->YYData->{opt_s} eq "rng") {
+	if (exists $parser->YYData->{opt_s} and $parser->YYData->{opt_s} eq "rng") {
 		$parser->YYData->{root}->visit(new RelaxngVisitor($parser));
 	} else {
 		$parser->YYData->{root}->visit(new XsdVisitor($parser));

@@ -6,7 +6,7 @@ WriteMakefile(
     'VERSION_FROM'  => 'xsd.pm',
     'ABSTRACT'      => 'IDL compiler to WSDL/SOAP and W3C Schema',
     'PREREQ_PM'     => {
-                        'CORBA::IDL::node'  => 2.04,
+                        'CORBA::IDL::node'  => 2.05,
     },
     'PM'            => {
                         'xsd.pm'        => '$(INST_LIBDIR)/XMLSchemas/xsd.pm',

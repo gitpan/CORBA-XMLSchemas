@@ -14,7 +14,7 @@ package XsdVisitor;
 # needs $node->{xsd_name} $node->{xsd_qname} (XsdNameVisitor)
 
 use vars qw($VERSION);
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 sub new {
 	my $proto = shift;
