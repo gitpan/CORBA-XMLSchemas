@@ -1,0 +1,9 @@
+Revision history for Perl extension CORBA::XMLSchemas.
+
+0.02  Mon Nov 17 12:30:00 2003
+	- first release
+
+0.01  Sun Sep 21 11:57:47 2003
+	- original version; created by h2xs 1.21 with options
+		-XA -n CORBA::XMLSchemas
+

@@ -1,0 +1,13 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+test.pl
+xsd.pm
+xsdname.pm
+wsdl.pm
+rng.pm
+idl2xsd.pl
+idl2wsdl.pl
+idl2soap.pl
+idl2rng.pl
