@@ -1,5 +1,10 @@
 Revision history for Perl extension CORBA::XMLSchemas.
 
+0.10  Thu Feb 19 18:30:00 2004
+	- compatible with CORBA::IDL 2.20
+	- add option -h (display help)
+	- add option -v (display version)
+ 
 0.03  Mon Jan  5 12:30:00 2004
 
 0.02  Mon Nov 17 12:30:00 2003

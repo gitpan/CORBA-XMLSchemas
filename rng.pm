@@ -7,11 +7,11 @@ use XML::DOM;
 #			Interface Definition Language (OMG IDL CORBA v3.0)
 #
 
-package RelaxngVisitor;
+package CORBA::XMLSchemas::relaxngVisitor;
 
 # needs $node->{xsd_name} (XsdNameVisitor)
 
-use vars qw($VERSION);
+use File::Basename;
 
 sub new {
 	my $proto = shift;
@@ -28,10 +28,7 @@ sub new {
 	$self->{srcname_mtime} = $parser->YYData->{srcname_mtime};
 	$self->{symbtab} = $parser->YYData->{symbtab};
 	$self->{root} = $parser->YYData->{root};
-	my $filename = $self->{srcname};
-	$filename =~ s/^([^\/]+\/)+//;
-	$filename =~ s/\.idl$//i;
-	$filename .= '.rng';
+	my $filename = basename($self->{srcname}, ".idl") . ".rng";
 	$self->open_stream($filename);
 	$self->{done_hash} = {};
 	$self->{num_key} = 'num_inc_rng';
@@ -286,16 +283,7 @@ sub visitModule {
 #	See 1.2.8		Interfaces
 #
 
-sub visitRegularInterface {
-	my $self = shift;
-	my ($node, $dom_parent) = @_;
-
-	foreach (@{$node->{list_decl}}) {
-		$self->_get_defn($_)->visit($self, $dom_parent);
-	}
-}
-
-sub visitAbstractInterface {
+sub visitInterface {
 	my $self = shift;
 	my ($node, $dom_parent) = @_;
 
@@ -308,15 +296,7 @@ sub visitLocalInterface {
 	shift->_no_mapping(@_);
 }
 
-sub visitForwardRegularInterface {
-#	empty
-}
-
-sub visitForwardAbstractInterface {
-#	empty
-}
-
-sub visitForwardLocalInterface {
+sub visitForwardBaseInterface {
 #	empty
 }
 
@@ -497,14 +477,6 @@ sub visitAbstractValue {
 	}
 }
 
-sub visitForwardRegularValue {
-#	empty
-}
-
-sub visitForwardAbstractValue {
-#	empty
-}
-
 #
 #	3.10	Constant Declaration
 #
@@ -640,66 +612,51 @@ sub visitStructType {
 	my $group = $self->{dom_doc}->createElement($self->{rng} . ":group");
 	$define->appendChild($group);
 
-	foreach (@{$node->{list_value}}) {
-		$self->_get_defn($_)->visit($self, $group);		# single or array
+	foreach (@{$node->{list_member}}) {
+		$self->_get_defn($_)->visit($self, $group);
 	}
 
 	$self->_standalone($node, $dom_parent);
 }
 
-sub visitArray {
+sub visitMember {
 	my $self = shift;
 	my ($node, $dom_parent) = @_;
 
 	my $type = $self->_get_defn($node->{type});
-	my $idx = scalar(@{$node->{array_size}}) - 1;
-	my $current = $type;
-	while ($current->isa('SequenceType')) {
-		$idx ++;
-		$current = $self->_get_defn($current->{type});
-	}
 
 	my $element = $self->{dom_doc}->createElement($self->{rng} . ":element");
 	$element->setAttribute("name", $node->{xsd_name});
 	$dom_parent->appendChild($element);
 
-	$current = $element;
-	my $first = 1;
-	foreach (reverse @{$node->{array_size}}) {
-		my $oneOrMore = $self->{dom_doc}->createElement($self->{rng} . ":oneOrMore");
-		$current->appendChild($oneOrMore);
+	my $current = $element;
+	if (exists $node->{array_size}) {
+		my $idx = scalar(@{$node->{array_size}}) - 1;
+		my $curr = $type;
+		while ($curr->isa('SequenceType')) {
+			$idx ++;
+			$curr = $self->_get_defn($curr->{type});
+		}
+		my $first = 1;
+		foreach (reverse @{$node->{array_size}}) {
+			my $oneOrMore = $self->{dom_doc}->createElement($self->{rng} . ":oneOrMore");
+			$current->appendChild($oneOrMore);
 
-		my $element = $self->{dom_doc}->createElement($self->{rng} . ":element");
-		my $item = ($idx != 0) ? "item" . $idx : "item";
-		$element->setAttribute("name", $item);
-		$oneOrMore->appendChild($element);
+			my $element = $self->{dom_doc}->createElement($self->{rng} . ":element");
+			my $item = ($idx != 0) ? "item" . $idx : "item";
+			$element->setAttribute("name", $item);
+			$oneOrMore->appendChild($element);
 
-		$current = $element;
-		$idx --;
-		$first = 0;
+			$current = $element;
+			$idx --;
+			$first = 0;
+		}
 	}
 
 	if ($type->isa('SequenceType')) {
 		$type->visit($self, $current);
 	} else {
 		$self->_ref_type($type, $current);
-	}
-}
-
-sub visitSingle {
-	my $self = shift;
-	my ($node, $dom_parent) = @_;
-
-	my $type = $self->_get_defn($node->{type});
-
-	my $element = $self->{dom_doc}->createElement($self->{rng} . ":element");
-	$element->setAttribute("name", $node->{xsd_name});
-	$dom_parent->appendChild($element);
-
-	if ($type->isa('SequenceType')) {
-		$type->visit($self, $element);
-	} else {
-		$self->_ref_type($type, $element);
 	}
 }
 
@@ -940,12 +897,12 @@ sub visitException {
 	$define->setAttribute("name", $node->{xsd_name});
 	$dom_parent->appendChild($define);
 
-	if (scalar @{$node->{list_value}}) {
+	if (scalar @{$node->{list_member}}) {
 		my $group = $self->{dom_doc}->createElement($self->{rng} . ":group");
 		$define->appendChild($group);
 
-		foreach (@{$node->{list_value}}) {
-			$self->_get_defn($_)->visit($self, $group);		# single or array
+		foreach (@{$node->{list_member}}) {
+			$self->_get_defn($_)->visit($self, $group);
 		}
 	} else {
 		my $empty = $self->{dom_doc}->createElement($self->{rng} . ":empty");
@@ -1059,19 +1016,7 @@ sub visitTypePrefix {
 #	3.16	Event Declaration
 #
 
-sub visitRegularEvent {
-	shift->_no_mapping(@_);
-}
-
-sub visitAbstractEvent {
-	shift->_no_mapping(@_);
-}
-
-sub visitForwardRegularEvent {
-	shift->_no_mapping(@_);
-}
-
-sub visitForwardAbstractEvent {
+sub visitEvent {
 	shift->_no_mapping(@_);
 }
 
@@ -1080,10 +1025,6 @@ sub visitForwardAbstractEvent {
 #
 
 sub visitComponent {
-	shift->_no_mapping(@_);
-}
-
-sub visitForwardComponent {
 	shift->_no_mapping(@_);
 }
 

@@ -7,7 +7,7 @@ use UNIVERSAL;
 #			CORBA to WSDL/SOAP Interworking Specification, Version 1.0 November 2003
 #
 
-package XsdNameVisitor;
+package CORBA::XMLSchemas::nameVisitor;
 
 # builds $node->{xsd_name} and $node->{xsd_qname}
 
@@ -52,11 +52,11 @@ sub _get_name {
 #	3.5		OMG IDL Specification
 #
 
-sub visitNameSpecification {
+sub visitSpecification {
 	my $self = shift;
 	my ($node) = @_;
 	foreach (@{$node->{list_export}}) {
-		$self->{symbtab}->Lookup($_)->visitName($self);
+		$self->{symbtab}->Lookup($_)->visit($self);
 	}
 }
 
@@ -64,11 +64,11 @@ sub visitNameSpecification {
 #	3.7		Module Declaration
 #
 
-sub visitNameModules {
+sub visitModules {
 	my $self = shift;
 	my ($node) = @_;
 	foreach (@{$node->{list_export}}) {
-		$self->{symbtab}->Lookup($_)->visitName($self);
+		$self->{symbtab}->Lookup($_)->visit($self);
 	}
 }
 
@@ -76,14 +76,14 @@ sub visitNameModules {
 #	3.8		Interface Declaration
 #
 
-sub visitNameBaseInterface {
+sub visitBaseInterface {
 	my $self = shift;
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
 	$node->{xsd_qname} = $self->{tns} . "CORBA.ObjectReference";
 	foreach (@{$node->{list_export}}) {
-		$self->{symbtab}->Lookup($_)->visitName($self);
+		$self->{symbtab}->Lookup($_)->visit($self);
 	}
 }
 
@@ -91,48 +91,34 @@ sub visitNameBaseInterface {
 #	3.9		Value Declaration
 #
 
-sub visitNameRegularValue {
+sub visitRegularValue {
 	my $self = shift;
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
 	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
 	foreach (@{$node->{list_export}}) {
-		$self->{symbtab}->Lookup($_)->visitName($self);
+		$self->{symbtab}->Lookup($_)->visit($self);
 	}
 }
 
-sub visitNameStateMember {
-	my $self = shift;
-	my ($node) = @_;
-	$node->{xsd_name} = $node->{idf};
-	my $type = $self->_get_defn($node->{type});
-	$type->visitName($self);
-	$self->{root}->{need_corba} = 1
-			if ($type->isa('BaseInterface'));
+sub visitStateMember {
+	shift->visitMember(@_);
 }
 
-sub visitNameInitializer {
+sub visitInitializer {
 	# empty
 }
 
-sub visitNameBoxedValue {
-	my $self = shift;
-	my ($node) = @_;
-	return if (exists $node->{xsd_name});
-	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
-	my $type = $self->_get_defn($node->{type});
-	$type->visitName($self);
-	$self->{root}->{need_corba} = 1
-			if ($type->isa('BaseInterface'));
+sub visitBoxedValue {
+	shift->visitTypeDeclarator(@_);
 }
 
 #
 #	3.10	Constant Declaration
 #
 
-sub visitNameConstant {
+sub visitConstant {
 	# empty
 }
 
@@ -140,16 +126,17 @@ sub visitNameConstant {
 #	3.11	Type Declaration
 #
 
-sub visitNameTypeDeclarator {
+sub visitTypeDeclarator {
 	my $self = shift;
 	my ($node) = @_;
+	return if (exists $node->{xsd_name});
 	if (exists $node->{modifier}) {		# native IDL2.2
 		$node->{xsd_name} = $node->{idf};
 	} else {
 		$node->{xsd_name} = $self->_get_name($node);
 		$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
 		my $type = $self->_get_defn($node->{type});
-		$type->visitName($self);
+		$type->visit($self);
 		$self->{root}->{need_corba} = 1
 				if ($type->isa('BaseInterface'));
 	}
@@ -161,7 +148,7 @@ sub visitNameTypeDeclarator {
 #	See	1.2.6		Primitive Types
 #
 
-sub visitNameBasicType {
+sub visitBasicType {
 	my $self = shift;
 	my ($node) = @_;
 	if      ($node->isa('FloatingPtType')) {
@@ -175,7 +162,7 @@ sub visitNameBasicType {
 			$node->{xsd_name} = "double";
 			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
 		} else {
-			warn __PACKAGE__,"::visitNameBasicType (FloatingType) $node->{value}.\n";
+			warn __PACKAGE__,"::visitBasicType (FloatingType) $node->{value}.\n";
 		}
 	} elsif ($node->isa('IntegerType')) {
 		if      ($node->{value} eq 'short') {
@@ -197,7 +184,7 @@ sub visitNameBasicType {
 			$node->{xsd_name} = "unsignedLong";
 			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
 		} else {
-			warn __PACKAGE__,"::visitNameBasicType (IntegerType) $node->{value}.\n";
+			warn __PACKAGE__,"::visitBasicType (IntegerType) $node->{value}.\n";
 		}
 	} elsif ($node->isa('CharType')) {
 		$node->{xsd_name} = "string";
@@ -224,7 +211,7 @@ sub visitNameBasicType {
 		$node->{xsd_qname} = $self->{corba} . ":" . $node->{xsd_name};
 		$self->{root}->{need_corba} = 1;
 	} else {
-		warn __PACKAGE__,"::visitNameBasicType INTERNAL ERROR (",ref $node,").\n";
+		warn __PACKAGE__,"::visitBasicType INTERNAL ERROR (",ref $node,").\n";
 	}
 }
 
@@ -234,33 +221,23 @@ sub visitNameBasicType {
 #	3.11.2.1	Structures
 #
 
-sub visitNameStructType {
+sub visitStructType {
 	my $self = shift;
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
 	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
-	foreach (@{$node->{list_value}}) {
-		$self->_get_defn($_)->visitName($self);		# single or array
+	foreach (@{$node->{list_member}}) {
+		$self->_get_defn($_)->visit($self);
 	}
 }
 
-sub visitNameArray {
+sub visitMember {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = $node->{idf};
 	my $type = $self->_get_defn($node->{type});
-	$type->visitName($self);
-	$self->{root}->{need_corba} = 1
-			if ($type->isa('BaseInterface'));
-}
-
-sub visitNameSingle {
-	my $self = shift;
-	my ($node) = @_;
-	$node->{xsd_name} = $node->{idf};
-	my $type = $self->_get_defn($node->{type});
-	$type->visitName($self);
+	$type->visit($self);
 	$self->{root}->{need_corba} = 1
 			if ($type->isa('BaseInterface'));
 }
@@ -268,38 +245,39 @@ sub visitNameSingle {
 #	3.11.2.2	Discriminated Unions
 #
 
-sub visitNameUnionType {
+sub visitUnionType {
 	my $self = shift;
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
 	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
-	$self->_get_defn($node->{type})->visitName($self);
+	$self->_get_defn($node->{type})->visit($self);
 	foreach (@{$node->{list_expr}}) {
-		$_->{element}->visitName($self);			# element
+		$_->{element}->visit($self);			# element
 	}
 }
 
-sub visitNameElement {
+sub visitElement {
 	my $self = shift;
 	my ($node) = @_;
-	$self->_get_defn($node->{value})->visitName($self);		# single or array
+	$self->_get_defn($node->{value})->visit($self);		# single or array
 }
 
 #	3.11.2.4	Enumerations
 #
 
-sub visitNameEnumType {
+sub visitEnumType {
 	my $self = shift;
 	my ($node) = @_;
+	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
 	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
 	foreach (@{$node->{list_expr}}) {
-		$_->visitName($self);			# enum
+		$_->visit($self);			# enum
 	}
 }
 
-sub visitNameEnum {
+sub visitEnum {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = $node->{idf};
@@ -311,11 +289,11 @@ sub visitNameEnum {
 #	See	1.2.7.5		Sequences
 #
 
-sub visitNameSequenceType {
+sub visitSequenceType {
 	my $self = shift;
 	my ($node) = @_;
 	my $type = $self->_get_defn($node->{type});
-	$type->visitName($self);
+	$type->visit($self);
 	$self->{root}->{need_corba} = 1
 			if ($type->isa('BaseInterface'));
 }
@@ -324,25 +302,22 @@ sub visitNameSequenceType {
 #	See	1.2.6		Primitive Types
 #
 
-sub visitNameStringType {
+sub visitStringType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "string";
 	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
 }
 
-sub visitNameWideStringType {
-	my $self = shift;
-	my ($node) = @_;
-	$node->{xsd_name} = "string";
-	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+sub visitWideStringType {
+	shift->visitStringType(@_);
 }
 
 #
 #	See	1.2.7.9		Fixed
 #
 
-sub visitNameFixedPtType {
+sub visitFixedPtType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "decimal";
@@ -355,14 +330,8 @@ sub visitNameFixedPtType {
 #	See	1.2.8.5		Exceptions
 #
 
-sub visitNameException {
-	my $self = shift;
-	my ($node) = @_;
-	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
-	foreach (@{$node->{list_value}}) {
-		$self->_get_defn($_)->visitName($self);		# single or array
-	}
+sub visitException {
+	shift->visitStructType(@_);
 }
 
 #
@@ -371,19 +340,19 @@ sub visitNameException {
 #	See	1.2.8.2		Interface as Binding Operation
 #
 
-sub visitNameOperation {
+sub visitOperation {
 	my $self = shift;
 	my ($node) = @_;
 	$self->{op} = $node->{idf};
 	$node->{xsd_name} = $self->_get_name($node);
 	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
-	$self->_get_defn($node->{type})->visitName($self);
+	$self->_get_defn($node->{type})->visit($self);
 	foreach (@{$node->{list_param}}) {
-		$_->visitName($self);			# parameter
+		$_->visit($self);			# parameter
 	}
 }
 
-sub visitNameParameter {
+sub visitParameter {
 	my $self = shift;
 	my ($node) = @_;
 	if ($self->{op} =~ /^_set_/) {
@@ -392,12 +361,12 @@ sub visitNameParameter {
 		$node->{xsd_name} = $node->{idf};
 	}
 	my $type = $self->_get_defn($node->{type});
-	$type->visitName($self);
+	$type->visit($self);
 	$self->{root}->{need_corba} = 1
 			if ($type->isa('BaseInterface'));
 }
 
-sub visitNameVoidType {
+sub visitVoidType {
 	# empty
 }
 
@@ -405,11 +374,11 @@ sub visitNameVoidType {
 #	3.14	Attribute Declaration
 #
 
-sub visitNameAttribute {
+sub visitAttribute {
 	my $self = shift;
 	my ($node) = @_;
-	$node->{_get}->visitName($self);
-	$node->{_set}->visitName($self)
+	$node->{_get}->visit($self);
+	$node->{_set}->visit($self)
 			if (exists $node->{_set});
 }
 
@@ -417,11 +386,11 @@ sub visitNameAttribute {
 #	3.15	Repository Identity Related Declarations
 #
 
-sub visitNameTypeId {
+sub visitTypeId {
 	# empty
 }
 
-sub visitNameTypePrefix {
+sub visitTypePrefix {
 	# empty
 }
 
@@ -429,19 +398,7 @@ sub visitNameTypePrefix {
 #	3.16	Event Declaration
 #
 
-sub visitRegularEvent {
-	# no mapping
-}
-
-sub visitAbstractEvent {
-	# no mapping
-}
-
-sub visitForwardRegularEvent {
-	# no mapping
-}
-
-sub visitForwardAbstractEvent {
+sub visitEvent {
 	# no mapping
 }
 
@@ -449,23 +406,31 @@ sub visitForwardAbstractEvent {
 #	3.17	Component Declaration
 #
 
-sub visitNameProvides {
+sub visitComponent {
 	# no mapping
 }
 
-sub visitNameUses {
+sub visitForwardComponent {
 	# no mapping
 }
 
-sub visitNamePublishes {
+sub visitProvides {
 	# no mapping
 }
 
-sub visitNameEmits {
+sub visitUses {
 	# no mapping
 }
 
-sub visitNameConsumes {
+sub visitPublishes {
+	# no mapping
+}
+
+sub visitEmits {
+	# no mapping
+}
+
+sub visitConsumes {
 	# no mapping
 }
 
@@ -473,11 +438,11 @@ sub visitNameConsumes {
 #	3.18	Home Declaration
 #
 
-sub visitNameFactory {
+sub visitFactory {
 	# no mapping
 }
 
-sub visitNameFinder {
+sub visitFinder {
 	# no mapping
 }
 

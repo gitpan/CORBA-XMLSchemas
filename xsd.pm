@@ -9,12 +9,16 @@ use XML::DOM;
 #			CORBA to WSDL/SOAP Interworking Specification, Version 1.0 November 2003
 #
 
-package XsdVisitor;
-
-# needs $node->{xsd_name} $node->{xsd_qname} (XsdNameVisitor)
+package CORBA::XMLSchemas;
 
 use vars qw($VERSION);
-$VERSION = '0.03';
+$VERSION = '0.10';
+
+package CORBA::XMLSchemas::xsdVisitor;
+
+use File::Basename;
+
+# needs $node->{xsd_name} $node->{xsd_qname} (XsdNameVisitor)
 
 sub new {
 	my $proto = shift;
@@ -31,10 +35,7 @@ sub new {
 	$self->{srcname_mtime} = $parser->YYData->{srcname_mtime};
 	$self->{symbtab} = $parser->YYData->{symbtab};
 	$self->{root} = $parser->YYData->{root};
-	my $filename = $self->{srcname};
-	$filename =~ s/^([^\/]+\/)+//;
-	$filename =~ s/\.idl$//i;
-	$filename .= '.xsd';
+	my $filename = basename($self->{srcname}, ".idl") . ".xsd";
 	$self->open_stream($filename);
 	$self->{done_hash} = {};
 	$self->{num_key} = 'num_inc_xsd';
@@ -240,16 +241,7 @@ sub visitModule {
 #	See 1.2.8		Interfaces
 #
 
-sub visitRegularInterface {
-	my $self = shift;
-	my ($node, $dom_parent) = @_;
-
-	foreach (@{$node->{list_decl}}) {
-		$self->_get_defn($_)->visit($self, $dom_parent);
-	}
-}
-
-sub visitAbstractInterface {
+sub visitInterface {
 	my $self = shift;
 	my ($node, $dom_parent) = @_;
 
@@ -262,15 +254,7 @@ sub visitLocalInterface {
 	shift->_no_mapping(@_);
 }
 
-sub visitForwardRegularInterface {
-#	empty
-}
-
-sub visitForwardAbstractInterface {
-#	empty
-}
-
-sub visitForwardLocalInterface {
+sub visitForwardBaseInterface {
 #	empty
 }
 
@@ -466,14 +450,6 @@ sub visitAbstractValue {
 		}
 		$value_element->visit($self, $dom_parent);
 	}
-}
-
-sub visitForwardRegularValue {
-#	empty
-}
-
-sub visitForwardAbstractValue {
-#	empty
 }
 
 #
@@ -680,22 +656,16 @@ sub _StructType_Content {
 	my $sequence = $self->{dom_doc}->createElement($self->{xsd} . ":sequence");
 	$dom_parent->appendChild($sequence);
 
-	foreach (@{$node->{list_value}}) {
-		$self->_get_defn($_)->visit($self, $sequence);		# single or array
+	foreach (@{$node->{list_member}}) {
+		$self->_get_defn($_)->visit($self, $sequence);
 	}
 }
 
-sub visitArray {
+sub visitMember {
 	my $self = shift;
 	my ($node, $dom_parent) = @_;
 
 	my $type = $self->_get_defn($node->{type});
-	my $idx = scalar(@{$node->{array_size}}) - 1;
-	my $current = $type;
-	while ($current->isa('SequenceType')) {
-		$idx ++;
-		$current = $self->_get_defn($current->{type});
-	}
 
 	my $element = $self->{dom_doc}->createElement($self->{xsd} . ":element");
 	$element->setAttribute("name", $node->{xsd_name});
@@ -703,25 +673,33 @@ sub visitArray {
 	$element->setAttribute("minOccurs", "1");
 	$dom_parent->appendChild($element);
 
-	$current = $element;
-	my $first = 1;
-	foreach (reverse @{$node->{array_size}}) {
-		my $complexType = $self->{dom_doc}->createElement($self->{xsd} . ":complexType");
-		$current->appendChild($complexType);
+	my $current = $element;
+	if (exists $node->{array_size}) {
+		my $idx = scalar(@{$node->{array_size}}) - 1;
+		my $curr = $type;
+		while ($curr->isa('SequenceType')) {
+			$idx ++;
+			$curr = $self->_get_defn($curr->{type});
+		}
+		my $first = 1;
+		foreach (reverse @{$node->{array_size}}) {
+			my $complexType = $self->{dom_doc}->createElement($self->{xsd} . ":complexType");
+			$current->appendChild($complexType);
 
-		my $sequence = $self->{dom_doc}->createElement($self->{xsd} . ":sequence");
-		$complexType->appendChild($sequence);
+			my $sequence = $self->{dom_doc}->createElement($self->{xsd} . ":sequence");
+			$complexType->appendChild($sequence);
 
-		my $element = $self->{dom_doc}->createElement($self->{xsd} . ":element");
-		my $item = ($idx != 0) ? "item" . $idx : "item";
-		$element->setAttribute("name", $item);
-		$element->setAttribute("minOccurs", $self->_value($_));
-		$element->setAttribute("maxOccurs", $self->_value($_));
-		$sequence->appendChild($element);
+			my $element = $self->{dom_doc}->createElement($self->{xsd} . ":element");
+			my $item = ($idx != 0) ? "item" . $idx : "item";
+			$element->setAttribute("name", $item);
+			$element->setAttribute("minOccurs", $self->_value($_));
+			$element->setAttribute("maxOccurs", $self->_value($_));
+			$sequence->appendChild($element);
 
-		$current = $element;
-		$idx --;
-		$first = 0;
+			$current = $element;
+			$idx --;
+			$first = 0;
+		}
 	}
 	if ($type->isa('SequenceType')) {
 		my $complexType = $self->{dom_doc}->createElement($self->{xsd} . ":complexType");
@@ -730,30 +708,6 @@ sub visitArray {
 		$type->visit($self, $complexType);
 	} else {
 		$current->setAttribute("type", $type->{xsd_qname});
-	}
-}
-
-sub visitSingle {
-	my $self = shift;
-	my ($node, $dom_parent) = @_;
-
-	my $type = $self->_get_defn($node->{type});
-
-	my $element = $self->{dom_doc}->createElement($self->{xsd} . ":element");
-	$element->setAttribute("name", $node->{xsd_name});
-	$element->setAttribute("maxOccurs", "1");
-	$element->setAttribute("minOccurs", "1");
-	$element->setAttribute("nillable", "true")
-			if ($type->isa('StringType') or $type->isa('WideStringType'));
-	$dom_parent->appendChild($element);
-
-	if ($type->isa('SequenceType')) {
-		my $complexType = $self->{dom_doc}->createElement($self->{xsd} . ":complexType");
-		$element->appendChild($complexType);
-
-		$type->visit($self, $complexType);
-	} else {
-		$element->setAttribute("type", $type->{xsd_qname});
 	}
 }
 
@@ -1142,19 +1096,7 @@ sub visitTypePrefix {
 #	3.16	Event Declaration
 #
 
-sub visitRegularEvent {
-	shift->_no_mapping(@_);
-}
-
-sub visitAbstractEvent {
-	shift->_no_mapping(@_);
-}
-
-sub visitForwardRegularEvent {
-	shift->_no_mapping(@_);
-}
-
-sub visitForwardAbstractEvent {
+sub visitEvent {
 	shift->_no_mapping(@_);
 }
 
@@ -1163,10 +1105,6 @@ sub visitForwardAbstractEvent {
 #
 
 sub visitComponent {
-	shift->_no_mapping(@_);
-}
-
-sub visitForwardComponent {
 	shift->_no_mapping(@_);
 }
 

@@ -37,13 +37,5 @@ Build/Installation:
 	$ make
 	$ make install
 
-Copyright & Licence
--------------------
-
-(c) 2003 Francois PERRAD, France. All rights reserved.
-
-All CORBA::XMLSchemas modules are distributed
-under the terms of the Artistic Licence.
-
 
 Send bug reports, comments and suggestions to francois.perrad@gadz.org

@@ -11,9 +11,10 @@ use XML::DOM;
 
 use CORBA::XMLSchemas::xsd;
 
-package WsdlVisitor;
+package CORBA::XMLSchemas::wsdlVisitor;
 
-use base qw(XsdVisitor);
+use base qw(CORBA::XMLSchemas::xsdVisitor);
+use File::Basename;
 
 # needs $node->{xsd_name} $node->{xsd_qname} (XsdNameVisitor)
 
@@ -32,10 +33,7 @@ sub new {
 	$self->{srcname_mtime} = $parser->YYData->{srcname_mtime};
 	$self->{symbtab} = $parser->YYData->{symbtab};
 	$self->{base} = $parser->YYData->{opt_b};
-	my $filename = $self->{srcname};
-	$filename =~ s/^([^\/]+\/)+//;
-	$filename =~ s/\.idl$//i;
-	$filename .= '.wsdl';
+	my $filename = basename($self->{srcname}, ".idl") . ".wsdl";
 	$self->open_stream($filename);
 	$self->{done_hash} = {};
 	$self->{num_key} = 'num_inc_wsdl';
@@ -251,15 +249,7 @@ sub visitAbstractInterface {
 #	3.9		Value Declaration
 #
 
-sub visitRegularValue {
-	shift->_import(@_);
-}
-
-sub visitBoxedValue {
-	shift->_import(@_);
-}
-
-sub visitAbstractValue {
+sub visitValue {
 	shift->_import(@_);
 }
 
@@ -364,9 +354,10 @@ sub visitParameter {
 
 ##############################################################################
 
-package WsdlSoapBindingVisitor;
+package CORBA::XMLSchemas::wsdlSoapBindingVisitor;
 
-use base qw(XsdVisitor);
+use base qw(CORBA::XMLSchemas::xsdVisitor);
+use File::Basename;
 
 # needs $node->{xsd_name} $node->{xsd_qname} (XsdNameVisitor)
 
@@ -384,10 +375,7 @@ sub new {
 	$self->{srcname_mtime} = $parser->YYData->{srcname_mtime};
 	$self->{symbtab} = $parser->YYData->{symbtab};
 	$self->{base} = $parser->YYData->{opt_b};
-	my $filename = $self->{srcname};
-	$filename =~ s/^([^\/]+\/)+//;
-	$filename =~ s/\.idl$//i;
-	$filename .= 'binding.wsdl';
+	my $filename = basename($self->{srcname}, ".idl") . "binding.wsdl";
 	$self->open_stream($filename);
 	$self->{done_hash} = {};
 	$self->{num_key} = 'num_inc_soap';
@@ -444,6 +432,10 @@ sub visitSpecification {
 #	See 1.2.8		Interfaces
 #
 
+sub visitBaseInterface {
+	# empty
+}
+
 sub visitRegularInterface {
 	my $self = shift;
 	my ($node, $dom_parent) = @_;
@@ -465,25 +457,9 @@ sub visitRegularInterface {
 	delete $self->{itf};
 }
 
-sub visitAbstractInterface {
-	# empty
-}
-
 #
 #	3.9		Value Declaration
 #
-
-sub visitRegularValue {
-	# empty
-}
-
-sub visitBoxedValue {
-	# empty
-}
-
-sub visitAbstractValue {
-	# empty
-}
 
 #
 #	3.11	Type Declaration
