@@ -32,7 +32,7 @@ sub new {
 	$self->{srcname_size} = $parser->YYData->{srcname_size};
 	$self->{srcname_mtime} = $parser->YYData->{srcname_mtime};
 	$self->{symbtab} = $parser->YYData->{symbtab};
-	$self->{base} = $parser->YYData->{opt_b};
+	$self->{base} = $parser->YYData->{opt_b} || "";
 	my $filename = basename($self->{srcname}, ".idl") . ".wsdl";
 	$self->open_stream($filename);
 	$self->{done_hash} = {};

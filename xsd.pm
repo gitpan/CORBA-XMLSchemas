@@ -12,7 +12,7 @@ use XML::DOM;
 package CORBA::XMLSchemas::xsd;
 
 use vars qw($VERSION);
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 package CORBA::XMLSchemas::xsdVisitor;
 
@@ -57,7 +57,7 @@ sub _value {
 	my ($node) = @_;
 
 	my $value = $node->{value};
-	if ($value->isa('Enum')) {
+	if (ref $value and $value->isa('Enum')) {
 		return $value->{xsd_name};
 	} else {
 		my $str = $value;
