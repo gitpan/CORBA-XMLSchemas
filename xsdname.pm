@@ -55,6 +55,11 @@ sub _get_name {
 sub visitSpecification {
 	my $self = shift;
 	my ($node) = @_;
+	if (exists $node->{list_import}) {
+		foreach (@{$node->{list_import}}) {
+			$_->visit($self);
+		}
+	}
 	foreach (@{$node->{list_export}}) {
 		$self->{symbtab}->Lookup($_)->visit($self);
 	}

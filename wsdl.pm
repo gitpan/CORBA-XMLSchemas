@@ -50,10 +50,7 @@ sub _import {
 	unless (defined $self->{import}) {
 		my $import = $self->{dom_doc}->createElement($self->{wsdl} . ":import");
 		$import->setAttribute("namespace", "http://www.omg.org/IDL-Mapped/");
-		my $filename = $self->{srcname};
-		$filename =~ s/^([^\/]+\/)+//;
-		$filename =~ s/\.idl$//i;
-		$filename .= '.' . $self->{ext_schema};
+		my $filename = basename($self->{srcname}, ".idl") . "." . $self->{ext_schema};
 		$import->setAttribute("location", $self->{base} . $filename);
 		$self->{import} = $import;
 	}
@@ -412,10 +409,7 @@ sub visitSpecification {
 
 	my $import = $self->{dom_doc}->createElement($self->{wsdl} . ":import");
 	$import->setAttribute("namespace", "http://www.omg.org/IDL-Mapped/");
-	my $filename = $self->{srcname};
-	$filename =~ s/^([^\/]+\/)+//;
-	$filename =~ s/\.idl$//i;
-	$filename .= '.wsdl';
+	my $filename = basename($self->{srcname}, ".idl") . ".wsdl";
 	$import->setAttribute("location", $self->{base} . $filename);
 	$definitions->appendChild($import);
 

@@ -180,6 +180,11 @@ sub visitSpecification {
 
 	$self->_any($grammar);
 
+	if (exists $node->{list_import}) {
+		foreach (@{$node->{list_import}}) {
+			$_->visit($self, $grammar);
+		}
+	}
 	foreach (@{$node->{list_decl}}) {
 		$self->_get_defn($_)->visit($self, $grammar);
 	}

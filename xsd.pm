@@ -12,7 +12,7 @@ use XML::DOM;
 package CORBA::XMLSchemas::xsd;
 
 use vars qw($VERSION);
-$VERSION = '0.20';
+$VERSION = '0.21';
 
 package CORBA::XMLSchemas::xsdVisitor;
 
@@ -144,6 +144,11 @@ sub visitSpecification {
 
 	$self->_any($schema);
 
+	if (exists $node->{list_import}) {
+		foreach (@{$node->{list_import}}) {
+			$_->visit($self, $schema);
+		}
+	}
 	foreach (@{$node->{list_decl}}) {
 		$self->_get_defn($_)->visit($self, $schema);
 	}
