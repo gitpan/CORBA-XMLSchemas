@@ -130,16 +130,18 @@ sub visitTypeDeclarator {
 	my $self = shift;
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
-	if (exists $node->{modifier}) {		# native IDL2.2
-		$node->{xsd_name} = $node->{idf};
-	} else {
-		$node->{xsd_name} = $self->_get_name($node);
-		$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
-		my $type = $self->_get_defn($node->{type});
-		$type->visit($self);
-		$self->{root}->{need_corba} = 1
-				if ($type->isa('BaseInterface'));
-	}
+	$node->{xsd_name} = $self->_get_name($node);
+	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	my $type = $self->_get_defn($node->{type});
+	$type->visit($self);
+	$self->{root}->{need_corba} = 1
+			if ($type->isa('BaseInterface'));
+}
+
+sub visitNativeType {
+	my $self = shift;
+	my ($node) = @_;
+	$node->{xsd_name} = $node->{idf};
 }
 
 #
@@ -148,71 +150,99 @@ sub visitTypeDeclarator {
 #	See	1.2.6		Primitive Types
 #
 
-sub visitBasicType {
+sub visitIntegerType {
 	my $self = shift;
 	my ($node) = @_;
-	if      ($node->isa('FloatingPtType')) {
-		if      ($node->{value} eq 'float') {
-			$node->{xsd_name} = "float";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} elsif ($node->{value} eq 'double') {
-			$node->{xsd_name} = "double";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} elsif ($node->{value} eq 'long double') {
-			$node->{xsd_name} = "double";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} else {
-			warn __PACKAGE__,"::visitBasicType (FloatingType) $node->{value}.\n";
-		}
-	} elsif ($node->isa('IntegerType')) {
-		if      ($node->{value} eq 'short') {
-			$node->{xsd_name} = "short";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} elsif ($node->{value} eq 'unsigned short') {
-			$node->{xsd_name} = "unsignedShort";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} elsif ($node->{value} eq 'long') {
-			$node->{xsd_name} = "int";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} elsif ($node->{value} eq 'unsigned long') {
-			$node->{xsd_name} = "unsignedInt";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} elsif ($node->{value} eq 'long long') {
-			$node->{xsd_name} = "long";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} elsif ($node->{value} eq 'unsigned long long') {
-			$node->{xsd_name} = "unsignedLong";
-			$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-		} else {
-			warn __PACKAGE__,"::visitBasicType (IntegerType) $node->{value}.\n";
-		}
-	} elsif ($node->isa('CharType')) {
-		$node->{xsd_name} = "string";
+	if      ($node->{value} eq 'short') {
+		$node->{xsd_name} = "short";
 		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-	} elsif ($node->isa('WideCharType')) {
-		$node->{xsd_name} = "string";
+	} elsif ($node->{value} eq 'unsigned short') {
+		$node->{xsd_name} = "unsignedShort";
 		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-	} elsif ($node->isa('BooleanType')) {
-		$node->{xsd_name} = "boolean";
+	} elsif ($node->{value} eq 'long') {
+		$node->{xsd_name} = "int";
 		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-	} elsif ($node->isa('OctetType')) {
-		$node->{xsd_name} = "unsignedByte";
+	} elsif ($node->{value} eq 'unsigned long') {
+		$node->{xsd_name} = "unsignedInt";
 		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
-	} elsif ($node->isa('AnyType')) {		# See 1.2.7.8	Any
-		$node->{xsd_name} = "CORBA.Any";
-		$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
-		$self->{root}->{need_any} = 1;
-	} elsif ($node->isa('ObjectType')) {	# See 1.2.5		Object References
-		$node->{xsd_name} = "ObjectReference";
-		$node->{xsd_qname} = $self->{corba} . ":" . $node->{xsd_name};
-		$self->{root}->{need_corba} = 1;
-	} elsif ($node->isa('ValueBaseType')) {
-		$node->{xsd_name} = "ObjectReference";
-		$node->{xsd_qname} = $self->{corba} . ":" . $node->{xsd_name};
-		$self->{root}->{need_corba} = 1;
+	} elsif ($node->{value} eq 'long long') {
+		$node->{xsd_name} = "long";
+		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	} elsif ($node->{value} eq 'unsigned long long') {
+		$node->{xsd_name} = "unsignedLong";
+		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
 	} else {
-		warn __PACKAGE__,"::visitBasicType INTERNAL ERROR (",ref $node,").\n";
+		warn __PACKAGE__,"::visitIntegerType $node->{value}.\n";
 	}
+}
+
+sub visitFloatingPtType {
+	my $self = shift;
+	my ($node) = @_;
+	if      ($node->{value} eq 'float') {
+		$node->{xsd_name} = "float";
+		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	} elsif ($node->{value} eq 'double') {
+		$node->{xsd_name} = "double";
+		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	} elsif ($node->{value} eq 'long double') {
+		$node->{xsd_name} = "double";
+		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	} else {
+		warn __PACKAGE__,"::visitFloatingPtType $node->{value}.\n";
+	}
+}
+
+sub visitCharType {
+	my $self = shift;
+	my ($node) = @_;
+	$node->{xsd_name} = "string";
+	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+}
+
+sub visitWideCharType {
+	my $self = shift;
+	my ($node) = @_;
+	$node->{xsd_name} = "string";
+	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+}
+
+sub visitBooleanType {
+	my $self = shift;
+	my ($node) = @_;
+	$node->{xsd_name} = "boolean";
+	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+}
+
+sub visitOctetType {
+	my $self = shift;
+	my ($node) = @_;
+	$node->{xsd_name} = "unsignedByte";
+	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+}
+
+sub visitAnyType {		# See 1.2.7.8	Any
+	my $self = shift;
+	my ($node) = @_;
+	$node->{xsd_name} = "CORBA.Any";
+	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	$self->{root}->{need_any} = 1;
+}
+
+sub visitObjectType {	# See 1.2.5		Object References
+	my $self = shift;
+	my ($node) = @_;
+	$node->{xsd_name} = "ObjectReference";
+	$node->{xsd_qname} = $self->{corba} . ":" . $node->{xsd_name};
+	$self->{root}->{need_corba} = 1;
+}
+
+sub visitValueBaseType {
+	my $self = shift;
+	my ($node) = @_;
+	$node->{xsd_name} = "ObjectReference";
+	$node->{xsd_qname} = $self->{corba} . ":" . $node->{xsd_name};
+	$self->{root}->{need_corba} = 1;
 }
 
 #

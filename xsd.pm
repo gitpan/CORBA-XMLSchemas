@@ -12,7 +12,7 @@ use XML::DOM;
 package CORBA::XMLSchemas::xsd;
 
 use vars qw($VERSION);
-$VERSION = '0.13';
+$VERSION = '0.20';
 
 package CORBA::XMLSchemas::xsdVisitor;
 
@@ -150,7 +150,6 @@ sub visitSpecification {
 
 	print $FH "<!-- This file was generated (by ",$0,"). DO NOT modify it -->\n";
 	print $FH "<!-- From file : ",$self->{srcname},", ",$self->{srcname_size}," octets, ",POSIX::ctime($self->{srcname_mtime});
-	print $FH "     Generation date : ",POSIX::ctime(time());
 	print $FH "-->\n";
 	print $FH "\n";
 	print $FH $self->_beautify($self->{dom_doc}->toString());
@@ -256,7 +255,7 @@ sub visitLocalInterface {
 }
 
 sub visitForwardBaseInterface {
-#	empty
+	# empty
 }
 
 #
@@ -460,7 +459,7 @@ sub visitAbstractValue {
 #
 
 sub visitConstant {
-#	empty
+	# empty
 }
 
 #
@@ -480,7 +479,6 @@ sub visitTypeDeclarators {
 sub visitTypeDeclarator {
 	my $self = shift;
 	my ($node, $dom_parent, $indirect) = @_;
-	return if (exists $node->{modifier});	# native IDL2.2
 
 	my $type = $self->_get_defn($node->{type});
 	while ($type->isa('TypeDeclarator') and !exists $type->{array_size}) {
@@ -584,6 +582,10 @@ sub visitTypeDeclarator {
 	}
 
 	$self->_standalone($node, $dom_parent) unless ($indirect);
+}
+
+sub visitNativeType {
+	# empty
 }
 
 #

@@ -22,6 +22,7 @@ sub new {
 	$self->{standalone} = $standalone;
 	$self->{tag_root} = $tag_root || "";
 	$self->{rng} = 'rng';
+	$self->{xsd} = 'xs';
 #	$self->{corba} = 'corba';
 	$self->{srcname} = $parser->YYData->{srcname};
 	$self->{srcname_size} = $parser->YYData->{srcname_size};
@@ -187,7 +188,6 @@ sub visitSpecification {
 
 	print $FH "<!-- This file was generated (by ",$0,"). DO NOT modify it -->\n";
 	print $FH "<!-- From file : ",$self->{srcname},", ",$self->{srcname_size}," octets, ",POSIX::ctime($self->{srcname_mtime});
-	print $FH "     Generation date : ",POSIX::ctime(time());
 	print $FH "-->\n";
 	print $FH "\n";
 	print $FH $self->_beautify($self->{dom_doc}->toString());
@@ -297,7 +297,7 @@ sub visitLocalInterface {
 }
 
 sub visitForwardBaseInterface {
-#	empty
+	# empty
 }
 
 #
@@ -484,7 +484,7 @@ sub visitAbstractValue {
 #
 
 sub visitConstant {
-#	empty
+	# empty
 }
 
 #
@@ -504,7 +504,6 @@ sub visitTypeDeclarators {
 sub visitTypeDeclarator {
 	my $self = shift;
 	my ($node, $dom_parent) = @_;
-	return if (exists $node->{modifier});	# native IDL2.2
 
 	my $type = $self->_get_defn($node->{type});
 	if (	   $type->isa('StructType')
@@ -563,6 +562,10 @@ sub visitTypeDeclarator {
 	$self->_standalone($node, $dom_parent);
 }
 
+sub visitNativeType {
+	# empty
+}
+
 #
 #	3.11.1	Basic Types
 #
@@ -580,7 +583,7 @@ sub visitCharType {
 }
 
 sub visitBasicType {
-# empty
+	# empty
 }
 
 #
@@ -843,7 +846,7 @@ sub visitStringType {
 #
 
 sub visitWideStringType {
-# empty
+	# empty
 }
 
 #

@@ -92,7 +92,6 @@ sub visitSpecification {
 
 	print $FH "<!-- This file was generated (by ", $0, "). DO NOT modify it -->\n";
 	print $FH "<!-- From file : ", $self->{srcname}, ", ", $self->{srcname_size}, " octets, ", POSIX::ctime($self->{srcname_mtime});
-	print $FH "     Generation date : ", POSIX::ctime(time());
 	print $FH "-->\n";
 	print $FH "\n";
 	print $FH $self->_beautify($self->{dom_doc}->toString());
@@ -229,7 +228,7 @@ sub _operation {
 		$operation->appendChild($fault);
 	}
 
-	unless (exists $node->{modifier}) {
+	unless (exists $node->{modifier}) {		# oneway
 		my $fault = $self->{dom_doc}->createElement($self->{wsdl} . ":fault");
 		$fault->setAttribute("message", $self->{tns} . ":CORBA.SystemException");
 		$operation->appendChild($fault);
@@ -263,6 +262,10 @@ sub visitValue {
 
 sub visitTypeDeclarator {
 	shift->_import(@_);
+}
+
+sub visitNativeType {
+	# empty
 }
 
 sub visitStructType {
@@ -372,8 +375,10 @@ sub new {
 	bless($self, $class);
 	my ($parser) = @_;
 	$self->{tns} = 'tns';
+	$self->{xsd} = 'xs';
 	$self->{wsdl} = 'wsdl';
 	$self->{soap} = 'soap';
+	$self->{corba} = 'corba';
 	$self->{srcname} = $parser->YYData->{srcname};
 	$self->{srcname_size} = $parser->YYData->{srcname_size};
 	$self->{srcname_mtime} = $parser->YYData->{srcname_mtime};
@@ -420,7 +425,6 @@ sub visitSpecification {
 
 	print $FH "<!-- This file was generated (by ",$0,"). DO NOT modify it -->\n";
 	print $FH "<!-- From file : ",$self->{srcname},", ",$self->{srcname_size}," octets, ",POSIX::ctime($self->{srcname_mtime});
-	print $FH "     Generation date : ",POSIX::ctime(time());
 	print $FH "-->\n";
 	print $FH "\n";
 	print $FH $self->_beautify($self->{dom_doc}->toString());
@@ -470,6 +474,10 @@ sub visitRegularInterface {
 #
 
 sub visitTypeDeclarator {
+	# empty
+}
+
+sub visitNativeType {
 	# empty
 }
 
@@ -546,7 +554,7 @@ sub visitOperation {
 		$fault->appendChild($soap_body);
 	}
 
-	unless (exists $node->{modifier}) {
+	unless (exists $node->{modifier}) {		# oneway
 		my $fault = $self->{dom_doc}->createElement($self->{wsdl} . ":fault");
 		$fault->setAttribute("message", $self->{tns} . ":CORBA.SystemException");
 		$operation->appendChild($fault);

@@ -1,7 +1,10 @@
 Revision history for Perl extension CORBA::XMLSchemas.
 
-0.13  Tue Mar 16 08:30:00
-	- add a corba.xsd
+0.20  Tue May 18 18:30:00 2004
+	- compatible with CORBA::IDL 2.40
+
+0.13  Tue Mar 16 08:30:00 2004
+	- add a corba.xsd file 
 	- wsdl.pm : url ended by '/'
 	- wsdl.pm : <part> to <wsdl:part>
 	- xsdname.pm : corba:ObjectReference
