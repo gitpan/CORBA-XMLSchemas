@@ -23,7 +23,7 @@ if ($^O eq 'MSWin32') {
 } else {
 	$parser->YYData->{preprocessor} = 'cpp -C ' . $cflags;
 }
-$parser->getopts("hi:r:svx");
+$parser->getopts("b:hi:qr:stvx");
 if ($parser->YYData->{opt_v}) {
 	use CORBA::XMLSchemas::xsd;
 	print "CORBA::XMLSchemas $CORBA::XMLSchemas::xsd::VERSION\n";
@@ -83,7 +83,7 @@ idl2rng [options] I<spec>.idl
 
 =head1 OPTIONS
 
-All options are forwarded to C preprocessor, except -h -i -r -s -v -x.
+All options are forwarded to C preprocessor, except -b -h -i -q -r -s -t -v -x.
 
 With the GNU C Compatible Compiler Processor, useful options are :
 
@@ -105,6 +105,10 @@ Specific options :
 
 =over 8
 
+=item B<-b> I<base uri>
+
+Specify a base uri for location of include.
+
 =item B<-h>
 
 Display help.
@@ -113,6 +117,10 @@ Display help.
 
 Specify a path for import (only for IDL version 3.0).
 
+=item B<-q>
+
+Generate qualified elements.
+
 =item B<-r> I<root-element>
 
 Specify a root element.
@@ -120,6 +128,10 @@ Specify a root element.
 =item B<-s>
 
 Generate a standalone Schema (not only type definition).
+
+=item B<-t>
+
+Generate tabulated XML (beautify for human).
 
 =item B<-v>
 
@@ -156,11 +168,11 @@ available on E<lt>http://www.omg.org/E<gt>.
 
 =head1 SEE ALSO
 
-cpp, perl, idl2html, idl2java, idl2xsd
+cpp, perl, idl2html, idl2javaxml, idl2xsd
 
 =head1 COPYRIGHT
 
-(c) 2003-2004 Francois PERRAD, France. All rights reserved.
+(c) 2003-2005 Francois PERRAD, France. All rights reserved.
 
 This program and all CORBA::XMLSchemas modules are distributed
 under the terms of the Artistic Licence.

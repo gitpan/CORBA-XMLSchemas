@@ -5,9 +5,7 @@ use CORBA::IDL::parser30;
 use CORBA::IDL::symbtab;
 # visitors
 use CORBA::XMLSchemas::xsdname;
-use CORBA::XMLSchemas::xsd;
 use CORBA::XMLSchemas::wsdl;
-use CORBA::XMLSchemas::rng;
 
 my $parser = new Parser;
 $parser->YYData->{verbose_error} = 1;		# 0, 1
@@ -25,7 +23,7 @@ if ($^O eq 'MSWin32') {
 } else {
 	$parser->YYData->{preprocessor} = 'cpp -C ' . $cflags;
 }
-$parser->getopts("b:hi:s:vx");
+$parser->getopts("b:hi:qs:tvx");
 if ($parser->YYData->{opt_v}) {
 	print "CORBA::XMLSchemas $CORBA::XMLSchemas::xsd::VERSION\n";
 	print "CORBA::IDL $CORBA::IDL::node::VERSION\n";
@@ -69,11 +67,6 @@ if (        exists $parser->YYData->{root}
 		$parser->YYData->{symbtab}->Export();
 	}
 	$parser->YYData->{root}->visit(new CORBA::XMLSchemas::nameVisitor($parser));
-	if (exists $parser->YYData->{opt_s} and $parser->YYData->{opt_s} eq "rng") {
-		$parser->YYData->{root}->visit(new CORBA::XMLSchemas::relaxngVisitor($parser));
-	} else {
-		$parser->YYData->{root}->visit(new CORBA::XMLSchemas::xsdVisitor($parser));
-	}
 	$parser->YYData->{root}->visit(new CORBA::XMLSchemas::wsdlVisitor($parser, $parser->YYData->{opt_s}));
 }
 
@@ -89,7 +82,7 @@ idl2wsdl [options] I<spec>.idl
 
 =head1 OPTIONS
 
-All options are forwarded to C preprocessor, except -b -h -i -s -v -x.
+All options are forwarded to C preprocessor, except -b -h -i -q -s -t -v -x.
 
 With the GNU C Compatible Compiler Processor, useful options are :
 
@@ -123,9 +116,17 @@ Display help.
 
 Specify a path for import (only for IDL version 3.0).
 
+=item B<-q>
+
+Generate qualified elements.
+
 =item B<-s> (I<xsd>|I<rng>)
 
 Specify the schema used. By default I<xsd>.
+
+=item B<-t>
+
+Generate tabulated XML (beautify for human).
 
 =item B<-v>
 
@@ -144,11 +145,8 @@ B<idl2wsdl> parses the given input file (IDL) and generates :
 =over 4
 
 =item *
-a W3C Schema I<spec>.xsd following the CORBA to WSDL/SOAP Interworking
+a WSDL file I<spec>.wsdl following the CORBA to WSDL/SOAP Interworking
 Specification (WS-I comformant soap binding).
-
-=item *
-a WSDL file I<spec>.wsdl (WS-I comformant soap binding).
 
 =back
 
@@ -168,11 +166,11 @@ are available on E<lt>http://www.w3.org/TR/wsdlE<gt>.
 
 =head1 SEE ALSO
 
-cpp, perl, idl2html, idl2java, idl2xsd, idl2rng
+cpp, perl, idl2html, idl2xsd, idl2rng, idl2soap
 
 =head1 COPYRIGHT
 
-(c) 2003-2004 Francois PERRAD, France. All rights reserved.
+(c) 2003-2005 Francois PERRAD, France. All rights reserved.
 
 This program and all CORBA::XMLSchemas modules are distributed
 under the terms of the Artistic Licence.

@@ -4,7 +4,7 @@ use UNIVERSAL;
 #
 #			Interface Definition Language (OMG IDL CORBA v3.0)
 #
-#			CORBA to WSDL/SOAP Interworking Specification, Version 1.0 November 2003
+#			CORBA to WSDL/SOAP Interworking Specification, Version 1.1 February 2005
 #
 
 package CORBA::XMLSchemas::nameVisitor;
@@ -18,9 +18,10 @@ sub new {
 	bless($self, $class);
 	my ($parser, $ns) = @_;
 	$self->{key} = 'xsd_name';
-	$self->{tns} = 'tns';
-	$self->{xsd} = $ns || 'xs';
-	$self->{corba} = 'corba';
+	$self->{tns} = 'tns:';
+	$self->{xsd} = 'xs:';
+	$self->{xsd} = $ns . ':' if (defined $ns);
+	$self->{corba} = 'corba:';
 	$self->{symbtab} = $parser->YYData->{symbtab};
 	$self->{root} = $parser->YYData->{root};
 	return $self;
@@ -86,7 +87,7 @@ sub visitBaseInterface {
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{corba} . ":ObjectReference";
+	$node->{xsd_qname} = $self->{corba} . "ObjectReference";
 	foreach (@{$node->{list_export}}) {
 		$self->{symbtab}->Lookup($_)->visit($self);
 	}
@@ -101,7 +102,7 @@ sub visitRegularValue {
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{tns} . $node->{xsd_name};
 	foreach (@{$node->{list_export}}) {
 		$self->{symbtab}->Lookup($_)->visit($self);
 	}
@@ -136,7 +137,7 @@ sub visitTypeDeclarator {
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{tns} . $node->{xsd_name};
 	my $type = $self->_get_defn($node->{type});
 	$type->visit($self);
 	$self->{root}->{need_corba} = 1
@@ -160,22 +161,22 @@ sub visitIntegerType {
 	my ($node) = @_;
 	if      ($node->{value} eq 'short') {
 		$node->{xsd_name} = "short";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} elsif ($node->{value} eq 'unsigned short') {
 		$node->{xsd_name} = "unsignedShort";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} elsif ($node->{value} eq 'long') {
 		$node->{xsd_name} = "int";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} elsif ($node->{value} eq 'unsigned long') {
 		$node->{xsd_name} = "unsignedInt";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} elsif ($node->{value} eq 'long long') {
 		$node->{xsd_name} = "long";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} elsif ($node->{value} eq 'unsigned long long') {
 		$node->{xsd_name} = "unsignedLong";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} else {
 		warn __PACKAGE__,"::visitIntegerType $node->{value}.\n";
 	}
@@ -186,13 +187,13 @@ sub visitFloatingPtType {
 	my ($node) = @_;
 	if      ($node->{value} eq 'float') {
 		$node->{xsd_name} = "float";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} elsif ($node->{value} eq 'double') {
 		$node->{xsd_name} = "double";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} elsif ($node->{value} eq 'long double') {
 		$node->{xsd_name} = "double";
-		$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+		$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 	} else {
 		warn __PACKAGE__,"::visitFloatingPtType $node->{value}.\n";
 	}
@@ -202,35 +203,35 @@ sub visitCharType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "string";
-	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 }
 
 sub visitWideCharType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "string";
-	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 }
 
 sub visitBooleanType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "boolean";
-	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 }
 
 sub visitOctetType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "unsignedByte";
-	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 }
 
 sub visitAnyType {		# See 1.2.7.8	Any
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "CORBA.Any";
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{corba} . $node->{xsd_name};
 	$self->{root}->{need_any} = 1;
 }
 
@@ -238,7 +239,7 @@ sub visitObjectType {	# See 1.2.5		Object References
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "ObjectReference";
-	$node->{xsd_qname} = $self->{corba} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{corba} . $node->{xsd_name};
 	$self->{root}->{need_corba} = 1;
 }
 
@@ -246,7 +247,7 @@ sub visitValueBaseType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "ObjectReference";
-	$node->{xsd_qname} = $self->{corba} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{corba} . $node->{xsd_name};
 	$self->{root}->{need_corba} = 1;
 }
 
@@ -261,7 +262,7 @@ sub visitStructType {
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{tns} . $node->{xsd_name};
 	foreach (@{$node->{list_member}}) {
 		$self->_get_defn($_)->visit($self);
 	}
@@ -285,7 +286,7 @@ sub visitUnionType {
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{tns} . $node->{xsd_name};
 	$self->_get_defn($node->{type})->visit($self);
 	foreach (@{$node->{list_expr}}) {
 		$_->{element}->visit($self);			# element
@@ -306,7 +307,7 @@ sub visitEnumType {
 	my ($node) = @_;
 	return if (exists $node->{xsd_name});
 	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{tns} . $node->{xsd_name};
 	foreach (@{$node->{list_expr}}) {
 		$_->visit($self);			# enum
 	}
@@ -341,7 +342,7 @@ sub visitStringType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "string";
-	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 }
 
 sub visitWideStringType {
@@ -356,7 +357,7 @@ sub visitFixedPtType {
 	my $self = shift;
 	my ($node) = @_;
 	$node->{xsd_name} = "decimal";
-	$node->{xsd_qname} = $self->{xsd} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{xsd} . $node->{xsd_name};
 }
 
 #
@@ -380,7 +381,7 @@ sub visitOperation {
 	my ($node) = @_;
 	$self->{op} = $node->{idf};
 	$node->{xsd_name} = $self->_get_name($node);
-	$node->{xsd_qname} = $self->{tns} . ":" . $node->{xsd_name};
+	$node->{xsd_qname} = $self->{tns} . $node->{xsd_name};
 	$self->_get_defn($node->{type})->visit($self);
 	foreach (@{$node->{list_param}}) {
 		$_->visit($self);			# parameter

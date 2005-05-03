@@ -12,3 +12,7 @@ idl2wsdl.pl
 idl2soap.pl
 idl2rng.pl
 corba.xsd
+corba.wsdl
+corba.rnc
+corba.rng
+META.yml                                 Module meta-data (added by MakeMaker)
