@@ -1,5 +1,8 @@
 Revision history for Perl extension CORBA::XMLSchemas.
 
+0.41  Wed Nov 23 22:30:00 2005
+	- better inheritance of valuetype
+
 0.40  Mon May  2 22:30:00 2005
 	- CORBA to WSDL/SOAP Interworking Specification, Version 1.1 February 2005
 	- and many improvements

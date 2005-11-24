@@ -188,23 +188,25 @@ sub visitRegularValue {
 	my $group = $self->{dom_doc}->createElement($self->{rng} . "group");
 	$define->appendChild($group);
 
-	foreach ($node->getInheritance()) {
-		my $base = $self->_get_defn($_);
-		foreach (@{$base->{list_decl}}) {
-			my $defn = $self->_get_defn($_);
-			if ($defn->isa('StateMembers')) {
-				$defn->visit($self, $group);
-			}
+	if (exists $node->{inheritance} and exists $node->{inheritance}->{list_value}) {
+		for (@{$node->{inheritance}->{list_value}}) {
+			my $base = $self->_get_defn($_);
+			next unless ($base->isa('RegularValue'));
+			my $ref = $self->{dom_doc}->createElement($self->{rng} . "ref");
+			$ref->setAttribute("name", $base->{xsd_name});
+			$group->appendChild($ref);
+			last;
 		}
+	} else {
+		$self->_value_id($group);
 	}
+
 	foreach (@{$node->{list_decl}}) {
 		my $defn = $self->_get_defn($_);
 		if ($defn->isa('StateMembers')) {
 			$defn->visit($self, $group);
 		}
 	}
-
-	$self->_value_id($define);
 
 	$self->_standalone($node, $dom_parent);
 }

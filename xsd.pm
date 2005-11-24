@@ -12,7 +12,7 @@ use XML::DOM;
 package CORBA::XMLSchemas::xsd;
 
 use vars qw($VERSION);
-$VERSION = '0.40';
+$VERSION = '0.41';
 
 package CORBA::XMLSchemas::baseVisitor;
 
@@ -374,26 +374,34 @@ sub visitRegularValue {
 	$complexType->setAttribute("name", $node->{xsd_name});
 	$dom_parent->appendChild($complexType);
 
-	my $sequence = $self->{dom_doc}->createElement($self->{xsd} . "sequence");
-	$complexType->appendChild($sequence);
-
-	foreach ($node->getInheritance()) {
-		my $base = $self->_get_defn($_);
-		foreach (@{$base->{list_decl}}) {
-			my $defn = $self->_get_defn($_);
-			if ($defn->isa('StateMembers')) {
-				$defn->visit($self, $sequence);
-			}
+	my $extension;
+	if (exists $node->{inheritance} and exists $node->{inheritance}->{list_value}) {
+		for (@{$node->{inheritance}->{list_value}}) {
+			my $base = $self->_get_defn($_);
+			next unless ($base->isa('RegularValue'));
+			my $complexContent = $self->{dom_doc}->createElement($self->{xsd} . "complexContent");
+			$complexType->appendChild($complexContent);
+			$extension = $self->{dom_doc}->createElement($self->{xsd} . "extension");
+			$extension->setAttribute("base", $self->{tns} . $base->{xsd_name});
+			$complexContent->appendChild($extension);
+			last;
 		}
 	}
+
+	my $sequence = $self->{dom_doc}->createElement($self->{xsd} . "sequence");
+	if ($extension) {
+		$extension->appendChild($sequence);
+	} else {
+		$complexType->appendChild($sequence);
+		$self->_value_id($complexType);
+	}
+
 	foreach (@{$node->{list_decl}}) {
 		my $defn = $self->_get_defn($_);
 		if ($defn->isa('StateMembers')) {
 			$defn->visit($self, $sequence);
 		}
 	}
-
-	$self->_value_id($complexType);
 
 	$self->_standalone($node, $dom_parent) unless ($indirect);
 }
