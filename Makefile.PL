@@ -3,22 +3,18 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     'NAME'          => 'CORBA::XMLSchemas',
-    'VERSION_FROM'  => 'xsd.pm',
+    'VERSION_FROM'  => 'lib/CORBA/XMLSchemas.pm',
     'ABSTRACT'      => 'IDL compiler to WSDL/SOAP and W3C Schema',
     'PREREQ_PM'     => {
-                        'CORBA::IDL::node'  => 2.40,
-                        'XML::DOM'          => 0,
+                        'CORBA::IDL'    => 2.47,
+                        'XML::DOM'      => 0,
     },
-    'PM'            => {
-                        'xsd.pm'        => '$(INST_LIBDIR)/XMLSchemas/xsd.pm',
-                        'xsdname.pm'    => '$(INST_LIBDIR)/XMLSchemas/xsdname.pm',
-                        'wsdl.pm'       => '$(INST_LIBDIR)/XMLSchemas/wsdl.pm',
-                        'rng.pm'        => '$(INST_LIBDIR)/XMLSchemas/rng.pm',
-    },
-    'EXE_FILES'     => ['idl2xsd.pl', 'idl2wsdl.pl', 'idl2soap.pl', 'idl2rng.pl'],
+    'INSTALLDIRS'   => 'site',
+    'EXE_FILES'     => [ 'bin/idl2xsd', 'bin/idl2wsdl', 'bin/idl2soap', 'bin/idl2rng' ],
     'AUTHOR'        => "Francois PERRAD (francois.perrad\@gadz.org)",
     'dist'          => {
                         'COMPRESS'      => 'gzip',
                         'SUFFIX'        => '.gz',
     },
 );
+

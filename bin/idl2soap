@@ -1,8 +1,10 @@
 #!/usr/bin/perl -w
 
 use strict;
+use CORBA::IDL;
 use CORBA::IDL::parser30;
 use CORBA::IDL::symbtab;
+use CORBA::XMLSchemas;
 # visitors
 use CORBA::XMLSchemas::xsdname;
 use CORBA::XMLSchemas::wsdl;
@@ -20,13 +22,14 @@ if ($Parser::IDL_version lt '3.0') {
 if ($^O eq 'MSWin32') {
 	$parser->YYData->{preprocessor} = 'cpp -C ' . $cflags;
 #	$parser->YYData->{preprocessor} = 'CL /E /C /nologo ' . $cflags;	# Microsoft VC
-} else {
+}
+else {
 	$parser->YYData->{preprocessor} = 'cpp -C ' . $cflags;
 }
-$parser->getopts("b:hi:qs:tvx");
+$parser->getopts('b:hi:qs:tvx');
 if ($parser->YYData->{opt_v}) {
-	print "CORBA::XMLSchemas $CORBA::XMLSchemas::xsd::VERSION\n";
-	print "CORBA::IDL $CORBA::IDL::node::VERSION\n";
+	print "CORBA::XMLSchemas $CORBA::XMLSchemas::VERSION\n";
+	print "CORBA::IDL $CORBA::IDL::VERSION\n";
 	print "IDL $Parser::IDL_version\n";
 	print "$0\n";
 	print "Perl $] on $^O\n";
@@ -147,10 +150,10 @@ B<idl2soap> parses the given input file (IDL) and generates :
 
 =item *
 a WSDL file I<spec>.wsdl following the CORBA to WSDL/SOAP Interworking
-Specification (WS-I comformant soap binding).
+Specification (WS-I conformant soap binding, ie rpc/literal soap binding).
 
 =item *
-a WSDL binding file I<spec>binding.wsdl (WS-I comformant soap binding).
+a WSDL binding file I<spec>binding.wsdl (WS-I conformant soap binding).
 
 =back
 
@@ -174,7 +177,7 @@ cpp, perl, idl2html, idl2xsd, idl2rng, idl2wsdl
 
 =head1 COPYRIGHT
 
-(c) 2003-2005 Francois PERRAD, France. All rights reserved.
+(c) 2003-2007 Francois PERRAD, France. All rights reserved.
 
 This program and all CORBA::XMLSchemas modules are distributed
 under the terms of the Artistic Licence.

@@ -475,7 +475,7 @@ sub visitOperation {
 	$operation->appendChild($input);
 
 	my $soap_body = $self->{dom_doc}->createElement($self->{soap} . "body");
-	$soap_body->setAttribute("namespace", "http://www.omd.org/IDL-WSDL/1.0/");
+	$soap_body->setAttribute("namespace", "http://www.omg.org/IDL-WSDL/1.0/");
 	$soap_body->setAttribute("use", "literal");
 	$input->appendChild($soap_body);
 
@@ -483,7 +483,7 @@ sub visitOperation {
 	$operation->appendChild($output);
 
 	$soap_body = $self->{dom_doc}->createElement($self->{soap} . "body");
-	$soap_body->setAttribute("namespace", "http://www.omd.org/IDL-WSDL/1.0/");
+	$soap_body->setAttribute("namespace", "http://www.omg.org/IDL-WSDL/1.0/");
 	$soap_body->setAttribute("use", "literal");
 	$output->appendChild($soap_body);
 
@@ -494,7 +494,7 @@ sub visitOperation {
 		$operation->appendChild($fault);
 
 		my $soap_body = $self->{dom_doc}->createElement($self->{soap} . "body");
-		$soap_body->setAttribute("namespace", "http://www.omd.org/IDL-WSDL/1.0/");
+		$soap_body->setAttribute("namespace", "http://www.omg.org/IDL-WSDL/1.0/");
 		$soap_body->setAttribute("use", "literal");
 		$fault->appendChild($soap_body);
 	}

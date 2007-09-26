@@ -9,11 +9,6 @@ use XML::DOM;
 #			CORBA to WSDL/SOAP Interworking Specification, Version 1.1 February 2005
 #
 
-package CORBA::XMLSchemas::xsd;
-
-use vars qw($VERSION);
-$VERSION = '0.41';
-
 package CORBA::XMLSchemas::baseVisitor;
 
 sub open_stream {
@@ -259,7 +254,7 @@ sub new {
 	bless($self, $class);
 	my ($parser, $standalone) = @_;
 	$self->{standalone} = $standalone;
-	$self->{beautify} = $parser->YYData->{opt_t}; 
+	$self->{beautify} = $parser->YYData->{opt_t};
 	$self->{_xsd} = 'xs';
 	$self->{xsd} = $parser->YYData->{opt_q} ? 'xs:' : '';
 	$self->{_tns} = 'tns';

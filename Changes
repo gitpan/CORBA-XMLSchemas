@@ -1,5 +1,8 @@
 Revision history for Perl extension CORBA::XMLSchemas.
 
+0.42  Wed Sep 26 12:30:00 2007
+	- reorg: more compliant with CPAN requirements
+
 0.41  Wed Nov 23 22:30:00 2005
 	- better inheritance of valuetype
 
@@ -14,7 +17,7 @@ Revision history for Perl extension CORBA::XMLSchemas.
 	- compatible with CORBA::IDL 2.40
 
 0.13  Tue Mar 16 08:30:00 2004
-	- add a corba.xsd file 
+	- add a corba.xsd file
 	- wsdl.pm : url ended by '/'
 	- wsdl.pm : <part> to <wsdl:part>
 	- xsdname.pm : corba:ObjectReference
@@ -31,7 +34,7 @@ Revision history for Perl extension CORBA::XMLSchemas.
 	- compatible with CORBA::IDL 2.20
 	- add option -h (display help)
 	- add option -v (display version)
- 
+
 0.03  Mon Jan  5 12:30:00 2004
 
 0.02  Mon Nov 17 12:30:00 2003
