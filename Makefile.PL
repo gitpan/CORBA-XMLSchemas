@@ -6,7 +6,7 @@ WriteMakefile(
     'VERSION_FROM'  => 'lib/CORBA/XMLSchemas.pm',
     'ABSTRACT'      => 'IDL compiler to WSDL/SOAP and W3C Schema',
     'PREREQ_PM'     => {
-                        'CORBA::IDL'    => 2.47,
+                        'CORBA::IDL'    => 2.60,
                         'XML::DOM'      => 0,
     },
     'INSTALLDIRS'   => 'site',

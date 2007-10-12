@@ -1,9 +1,9 @@
 use strict;
+use warnings;
 
 package CORBA::XMLSchemas;
 
-use vars qw($VERSION);
-$VERSION = '0.42';
+our $VERSION = '2.60';
 
 1;
 
