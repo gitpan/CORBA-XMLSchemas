@@ -10,7 +10,7 @@ package CORBA::XMLSchemas::WsdlSoapBindingVisitor;
 use strict;
 use warnings;
 
-our $VERSION = '2.60';
+our $VERSION = '2.61';
 
 use CORBA::XMLSchemas::BaseVisitor;
 use base qw(CORBA::XMLSchemas::BaseVisitor);
@@ -218,6 +218,11 @@ sub visitOperation {
         my $fault = $self->{dom_doc}->createElement($self->{wsdl} . 'fault');
         $fault->setAttribute('name', 'CORBA.SystemException');
         $operation->appendChild($fault);
+
+        my $soap_fault = $self->{dom_doc}->createElement($self->{soap} . 'fault');
+        $soap_fault->setAttribute('name', 'CORBA.SystemException');
+        $soap_fault->setAttribute('use', 'literal');
+        $fault->appendChild($soap_fault);
     }
 }
 

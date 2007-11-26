@@ -1,5 +1,8 @@
 Revision history for Perl extension CORBA::XMLSchemas.
 
+2.61  Mon Nov 26 12:30:00 2007
+	- fix RT 30893 (SOAP binding of System exception) 
+
 2.60  Fri Oct 12 08:30:00 2007
 	- compatible with CORBA::IDL 2.60
 	- some Perl Best Practices
