@@ -10,7 +10,7 @@ package CORBA::XMLSchemas::WsdlSoapBindingVisitor;
 use strict;
 use warnings;
 
-our $VERSION = '2.61';
+our $VERSION = '2.62';
 
 use CORBA::XMLSchemas::BaseVisitor;
 use base qw(CORBA::XMLSchemas::BaseVisitor);
@@ -206,12 +206,14 @@ sub visitOperation {
         my $defn = $self->_get_defn($_);
 
         my $fault = $self->{dom_doc}->createElement($self->{wsdl} . 'fault');
+        $fault->setAttribute('name', $defn->{xsd_name});
         $operation->appendChild($fault);
 
-        my $soap_body = $self->{dom_doc}->createElement($self->{soap} . 'body');
-        $soap_body->setAttribute('namespace', 'http://www.omg.org/IDL-WSDL/1.0/');
-        $soap_body->setAttribute('use', 'literal');
-        $fault->appendChild($soap_body);
+        my $soap_fault = $self->{dom_doc}->createElement($self->{soap} . 'fault');
+        $soap_fault->setAttribute('namespace', 'http://www.omg.org/IDL-WSDL/1.0/');
+        $soap_fault->setAttribute('name', $defn->{xsd_name});
+        $soap_fault->setAttribute('use', 'literal');
+        $fault->appendChild($soap_fault);
     }
 
     unless (exists $node->{modifier}) {     # oneway
@@ -220,6 +222,7 @@ sub visitOperation {
         $operation->appendChild($fault);
 
         my $soap_fault = $self->{dom_doc}->createElement($self->{soap} . 'fault');
+        $soap_fault->setAttribute('namespace', 'http://www.omg.org/IDL-WSDL/1.0/');
         $soap_fault->setAttribute('name', 'CORBA.SystemException');
         $soap_fault->setAttribute('use', 'literal');
         $fault->appendChild($soap_fault);

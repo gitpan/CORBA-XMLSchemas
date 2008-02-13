@@ -3,7 +3,7 @@ use warnings;
 
 package CORBA::XMLSchemas;
 
-our $VERSION = '2.61';
+our $VERSION = '2.62';
 
 1;
 
